@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   DTS Coworker — Design Token System
+   Dark-first futuristic workspace theme.
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* Surfaces */
+    --surface:         220 13% 9%;     /* main bg  */
+    --surface-raised:  220 13% 12%;    /* cards, panels */
+    --surface-overlay: 220 13% 15%;    /* popovers, dropdowns */
+
+    /* Borders */
+    --border:          220 10% 20%;
+    --border-subtle:   220 10% 14%;
+
+    /* Accent — electric indigo */
+    --accent:          252 100% 70%;
+    --accent-glow:     252 100% 70%;
+    --accent-muted:    252 40% 30%;
+
+    /* Text */
+    --foreground:      220 15% 90%;
+    --muted-foreground:220 10% 55%;
+
+    /* Semantic */
+    --success:         160 70% 45%;
+    --warning:         38  92% 55%;
+    --danger:          0   80% 60%;
+
+    /* Layout */
+    --radius:          0.5rem;
+
+    /* Sidebar */
+    --sidebar-width:   240px;
+    --steps-width:     320px;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--surface));
+    color:            hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width:  5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--surface));
+  }
+  ::-webkit-scrollbar-thumb {
+    background:    hsl(var(--border));
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--accent-muted));
+  }
+
+  /* Focus ring */
+  :focus-visible {
+    outline: 2px solid hsl(var(--accent));
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Agent status pulse indicator */
+  .status-dot {
+    @apply relative inline-block w-2 h-2 rounded-full;
+  }
+  .status-dot::after {
+    content: '';
+    @apply absolute inset-0 rounded-full animate-ping opacity-60;
+  }
+  .status-dot.idle     { @apply bg-muted-foreground; }
+  .status-dot.idle::after { @apply hidden; }
+  .status-dot.thinking { @apply bg-purple-400; }
+  .status-dot.thinking::after { @apply bg-purple-400; }
+  .status-dot.working  { @apply bg-blue-400; }
+  .status-dot.working::after  { @apply bg-blue-400; }
+  .status-dot.waiting-approval { @apply bg-yellow-400; }
+  .status-dot.waiting-approval::after { @apply bg-yellow-400; }
+  .status-dot.error    { @apply bg-red-400; }
+  .status-dot.error::after { @apply hidden; }
+
+  /* Panel base */
+  .panel {
+    @apply bg-[hsl(var(--surface-raised))] border border-[hsl(var(--border))] rounded-xl;
+  }
+
+  /* Monospace label */
+  .mono-label {
+    @apply font-mono text-xs text-muted-foreground tracking-wider uppercase;
+  }
+
+  /* Step feed item */
+  .step-item {
+    @apply flex items-start gap-2 py-2 px-3 rounded-lg
+           hover:bg-[hsl(var(--surface-overlay))]
+           transition-colors duration-150
+           animate-step-appear;
+  }
+}
