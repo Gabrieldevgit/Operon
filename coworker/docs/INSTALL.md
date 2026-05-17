@@ -45,10 +45,10 @@ DTS Coworker is a multi-agent AI development workspace. Four specialist agents �
 | 03 | Memory System · Firestore Persistence · Auto-extraction | ✅ Complete |
 | 04 | Tool System · Permissions · 5 Built-in Tools | ✅ Complete |
 | 05 | Agent System · Orchestrator · 3 Specialists · Delegation | ✅ Complete |
-| 06 | AI Steps Observability · Thinking Preview | 🔜 Next |
-| 07 | Skills Implementation · 8 Core Skills | ⬜ Planned |
-| 08 | IDE Features · Live Diff · Project Tree | ⬜ Planned |
-| 09 | Settings System · Control Center | ⬜ Planned |
+| 06 | AI Steps Observability · Thinking Preview | ✅ Complete |
+| 07 | Skills Implementation · 8 Core Skills | ✅ Complete |
+| 08 | IDE Features · Live Diff · Project Tree | ✅ Complete |
+| 09 | Settings System · Control Center | ✅ Complete |
 
 ---
 
