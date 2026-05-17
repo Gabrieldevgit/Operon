@@ -32,13 +32,49 @@ export interface AgentPersonality {
 }
 
 export interface AgentCapabilities {
+  // Binary access flags (unchanged)
   canInitiateTasks:    boolean
   canModifyFiles:      boolean
   canAccessTerminal:   boolean
   canCollaborate:      boolean
   canRequestApprovals: boolean
   canAutoExecuteSafe:  boolean
+
+  // ChatGPT Bug 6 fix: skill-based routing strings so the orchestrator
+  // can match tasks to agents dynamically instead of hardcoding agent IDs.
+  // Example: "Which agent can handle 'ui_generation'?" → filter by skills.
+  skills: AgentSkill[]
 }
+
+// Canonical skill identifiers — use ONLY these strings across the system.
+// Never invent ad-hoc skill strings in agent or orchestrator code.
+export type AgentSkill =
+  // Development
+  | 'code_generation'
+  | 'code_refactoring'
+  | 'debugging'
+  | 'api_integration'
+  | 'test_writing'
+  | 'performance_optimization'
+  // Design
+  | 'ui_generation'
+  | 'layout_design'
+  | 'animation'
+  | 'responsive_design'
+  | 'design_system'
+  // Review
+  | 'code_review'
+  | 'security_audit'
+  | 'bug_detection'
+  | 'consistency_check'
+  // Orchestration
+  | 'task_breakdown'
+  | 'agent_delegation'
+  | 'effort_estimation'
+  | 'background_monitoring'
+  // Memory
+  | 'context_recall'
+  | 'memory_summarization'
 
 export interface Agent {
   id:              string

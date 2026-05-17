@@ -8,7 +8,7 @@ import type { AgentStatus, ToolRisk } from '@/types'
 
 // ─── Typed event map ──────────────────────────────────────────
 
-export type CoworkerEventMap = {
+export type OperonEventMap = {
   // Task lifecycle
   'task.started':       { taskId: string; agentId: string; title: string }
   'task.completed':     { taskId: string; agentId: string; result: string }
@@ -55,10 +55,10 @@ export type CoworkerEventMap = {
   'persistence.error':  { source: string; error: string }
 }
 
-export type CoworkerEventType    = keyof CoworkerEventMap
-export type CoworkerEventPayload<T extends CoworkerEventType> = CoworkerEventMap[T]
+export type OperonEventType    = keyof OperonEventMap
+export type OperonEventPayload<T extends OperonEventType> = OperonEventMap[T]
 
-type Handler<T extends CoworkerEventType> = (payload: CoworkerEventPayload<T>) => void
+type Handler<T extends OperonEventType> = (payload: OperonEventPayload<T>) => void
 type AnyHandler = (payload: unknown) => void
 
 // ─── EventBus class ───────────────────────────────────────────
@@ -69,7 +69,7 @@ class EventBus {
   private readonly MAX_HISTORY = 200
 
   /** Subscribe to an event. Returns an unsubscribe function. */
-  on<T extends CoworkerEventType>(event: T, handler: Handler<T>): () => void {
+  on<T extends OperonEventType>(event: T, handler: Handler<T>): () => void {
     if (!this.handlers.has(event)) {
       this.handlers.set(event, new Set())
     }
@@ -78,7 +78,7 @@ class EventBus {
   }
 
   /** Subscribe for one emission only. */
-  once<T extends CoworkerEventType>(event: T, handler: Handler<T>): () => void {
+  once<T extends OperonEventType>(event: T, handler: Handler<T>): () => void {
     const wrapper: Handler<T> = (payload) => {
       handler(payload)
       this.off(event, wrapper)
@@ -87,12 +87,12 @@ class EventBus {
   }
 
   /** Unsubscribe a specific handler. */
-  off<T extends CoworkerEventType>(event: T, handler: Handler<T>): void {
+  off<T extends OperonEventType>(event: T, handler: Handler<T>): void {
     this.handlers.get(event)?.delete(handler as AnyHandler)
   }
 
   /** Emit an event synchronously to all subscribers. */
-  emit<T extends CoworkerEventType>(event: T, payload: CoworkerEventPayload<T>): void {
+  emit<T extends OperonEventType>(event: T, payload: OperonEventPayload<T>): void {
     this.history.push({ type: event, payload, ts: Date.now() })
     if (this.history.length > this.MAX_HISTORY) this.history.shift()
 
@@ -109,20 +109,20 @@ class EventBus {
   }
 
   /** Get recent event history (for debugging / replay). */
-  getHistory(filterType?: CoworkerEventType) {
+  getHistory(filterType?: OperonEventType) {
     return filterType
       ? this.history.filter(e => e.type === filterType)
       : [...this.history]
   }
 
   /** Remove all handlers for an event, or all handlers everywhere. */
-  clear(event?: CoworkerEventType) {
+  clear(event?: OperonEventType) {
     if (event) this.handlers.delete(event)
     else       this.handlers.clear()
   }
 
   /** How many handlers are registered (debugging). */
-  listenerCount(event: CoworkerEventType): number {
+  listenerCount(event: OperonEventType): number {
     return this.handlers.get(event)?.size ?? 0
   }
 }
@@ -135,7 +135,7 @@ export const bus = new EventBus()
 
 import { useEffect } from 'react'
 
-export function useEvent<T extends CoworkerEventType>(
+export function useEvent<T extends OperonEventType>(
   event: T,
   handler: Handler<T>,
   deps: React.DependencyList = []
@@ -151,3 +151,10 @@ export function useEvent<T extends CoworkerEventType>(
 if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   (window as typeof window & { __coworkerBus?: EventBus }).__coworkerBus = bus
 }
+
+// ─── Backward-compat aliases (CoworkerEvent* → OperonEvent*) ─────────────────
+// Bug 10 fix: renamed to match Operon brand. Old names kept as aliases so
+// any remaining imports still resolve during migration.
+export type CoworkerEventMap      = OperonEventMap
+export type CoworkerEventType     = OperonEventType
+export type CoworkerEventPayload<T extends OperonEventType> = OperonEventPayload<T>

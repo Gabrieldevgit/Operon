@@ -7,6 +7,7 @@
 import { useState }         from 'react'
 import { useSettingsStore }  from '@/store/settings.store'
 import { useMemoryStore }    from '@/store/memory.store'
+import { useOperonIDEStore } from '@/store/operon-ide.store'
 import type {
   MemoryPersistence, MemoryVerbosity, AutoExtraction,
   StepGranularity, StepFilter,
@@ -152,9 +153,14 @@ export function MemoryStepsPanel({ activeSection }: MemoryStepsPanelProps) {
   const setMemory = useSettingsStore(s => s.setMemory)
   const setSteps  = useSettingsStore(s => s.setAISteps)
 
-  const clearSession = () => useMemoryStore.getState().clearByScope?.('session')
-  const clearProject = () => useMemoryStore.getState().clearByScope?.('project')
-  const clearAll     = () => useMemoryStore.getState().clearByScope?.('global')
+  const workspaceId  = useOperonIDEStore(s => s.workspaceRoot)
+  const clearSession = () => useMemoryStore.getState().clearScope(workspaceId, 'session')
+  const clearProject = () => useMemoryStore.getState().clearScope(workspaceId, 'project')
+  const clearAll     = () => {
+    useMemoryStore.getState().clearScope(workspaceId, 'session')
+    useMemoryStore.getState().clearScope(workspaceId, 'project')
+    useMemoryStore.getState().clearScope(workspaceId, 'global')
+  }
 
   if (activeSection === 'memory') {
     return (

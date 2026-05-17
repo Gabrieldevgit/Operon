@@ -1,11 +1,14 @@
 // ============================================================
 // BaseAgent — all agents extend this
 // Now injects cross-session memory into every AI call.
+// Bug 11 fix: Now emits agent.status and agent.thinking events
+// to the central EventBus so all systems stay in sync.
 // ============================================================
 import { nanoid }           from 'nanoid'
 import { getProvider }      from '@/lib/ai/registry'
 import { buildAgentContext } from '@/lib/memory/agent-context'
 import { save_action_summary } from '@/lib/memory/memory'
+import { bus }              from '@/lib/events/bus'
 import type { AIMessage, AIModelProvider } from '@/lib/ai/types'
 import type { AgentRole, AutonomyLevel }   from '@/types/agent'
 import type { StepCategory }               from '@/types/step'
@@ -76,6 +79,10 @@ export abstract class BaseAgent {
     const provider  = getProvider(this.modelProvider)
     const sysPrompt = this.buildFullSystemPrompt(ctx, extra)
     let   full      = ''
+
+    // Emit thinking status before streaming starts
+    bus.emit('agent.status', { agentId: this.id, status: 'thinking' })
+
     await provider.stream(
       messages,
       { model: this.modelId, systemPrompt: sysPrompt, maxTokens: 2048, temperature: 0.7 },
@@ -83,10 +90,26 @@ export abstract class BaseAgent {
         if (!chunk.done && chunk.delta) {
           full += chunk.delta
           ctx.send({ type: 'delta', delta: chunk.delta, agentId: this.id })
+          // Emit partial thinking text so ThinkingLayer can render it
+          bus.emit('agent.thinking', { agentId: this.id, text: chunk.delta })
         }
       }
     )
+
+    // Back to idle when streaming completes
+    bus.emit('agent.status', { agentId: this.id, status: 'idle' })
     return full
+  }
+
+  // ─── Status helpers ────────────────────────────────────────
+
+  /** Emit agent status to EventBus + the SSE stream simultaneously */
+  protected setStatus(
+    ctx: AgentRunContext,
+    status: 'idle' | 'thinking' | 'working' | 'waiting-approval' | 'error'
+  ) {
+    bus.emit('agent.status', { agentId: this.id, status })
+    ctx.send({ type: 'agent_switch', agentId: this.id, agentName: this.name, role: this.role })
   }
 
   // ─── Step emission ────────────────────────────────────────

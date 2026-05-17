@@ -20,7 +20,7 @@
 import { useRef, useCallback, Suspense, lazy } from 'react'
 import { useOperonIDEStore, useActiveTab, useDirtyCount } from '@/store/operon-ide.store'
 import { OPERON, IS_ELECTRON }  from '@/config/operon'
-import { SyncStatusDot }        from '@/lib/ide/sync-engine'
+import { SyncStatusDot }        from '@/components/ide/SyncStatusDot'   // Bug 5 fix: was @/lib/ide/sync-engine
 import { ProjectTree }          from '@/components/ide/ProjectTree'
 import { CodeEditor, EditorTabBar } from './CodeEditor'
 import { TerminalPanel }        from './TerminalPanel'
@@ -29,8 +29,10 @@ import { fsBridge }             from '@/server/filesystem'
 import { cn }                   from '@/lib/utils'
 
 // Lazy-load heavy right-panel components
+// Bug 1 fix: AgentPanel now exists at workspace/AgentPanel
+// Bug 2 fix: StepsPanel is in layout/, not workspace/
 const AgentPanel   = lazy(() => import('@/components/workspace/AgentPanel').then(m => ({ default: m.AgentPanel })))
-const StepsPanel   = lazy(() => import('@/components/workspace/StepsPanel').then(m => ({ default: m.StepsPanel })))
+const StepsPanel   = lazy(() => import('@/components/layout/StepsPanel').then(m => ({ default: m.StepsPanel })))
 const MemoryPanel  = lazy(() => import('@/components/workspace/MemoryPanel').then(m => ({ default: m.MemoryPanel })))
 const DiffViewer   = lazy(() => import('@/components/ide/DiffViewer').then(m => ({ default: m.DiffViewer })))
 
@@ -147,7 +149,7 @@ function TitleBar() {
 
 // ─── Right panel tabs ─────────────────────────────────────────
 
-function RightPanel({ className }: { className?: string }) {
+function RightPanel({ className, style }: { className?: string; style?: React.CSSProperties }) {
   const rightTab = useOperonIDEStore(s => s.layout.rightTab)
   const setRight = useOperonIDEStore(s => s.setRightTab)
 
@@ -159,7 +161,7 @@ function RightPanel({ className }: { className?: string }) {
   ] as const
 
   return (
-    <div className={cn('flex flex-col bg-zinc-950', className)}>
+    <div className={cn('flex flex-col bg-zinc-950', className)} style={style}>
       {/* Tab bar */}
       <div className="flex border-b border-zinc-800/60 shrink-0">
         {TABS.map(t => (
@@ -195,7 +197,7 @@ function RightPanel({ className }: { className?: string }) {
 
 // ─── Bottom panel tabs ────────────────────────────────────────
 
-function BottomPanel({ className }: { className?: string }) {
+function BottomPanel({ className, style }: { className?: string; style?: React.CSSProperties }) {
   const bottomTab = useOperonIDEStore(s => s.layout.bottomTab)
   const setBottom = useOperonIDEStore(s => s.setBottomTab)
 
@@ -207,7 +209,7 @@ function BottomPanel({ className }: { className?: string }) {
   ] as const
 
   return (
-    <div className={cn('flex flex-col bg-zinc-950', className)}>
+    <div className={cn('flex flex-col bg-zinc-950', className)} style={style}>
       <div className="flex border-b border-zinc-800/60 shrink-0">
         {TABS.map(t => (
           <button

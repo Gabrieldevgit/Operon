@@ -82,7 +82,7 @@ export const useTasksStore = create<TasksState>()(
     },
 
     getActiveTasks() {
-      return Object.values(get().tasks).filter(t => t.status === 'active')
+      return Object.values(get().tasks).filter(t => t.status === 'executing')
     },
   }))
 )

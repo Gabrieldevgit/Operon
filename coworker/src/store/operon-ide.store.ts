@@ -7,7 +7,7 @@ import { create }  from 'zustand'
 import { immer }   from 'zustand/middleware/immer'
 import { persist } from 'zustand/middleware'
 import { nanoid }  from 'nanoid'
-import { OPERON, resolveLanguage } from '@/config/operon'
+import { OPERON, resolveLanguage, IS_ELECTRON } from '@/config/operon'  // Bug 7 fix: was at bottom
 
 // ─── Editor tab ───────────────────────────────────────────────
 
@@ -103,6 +103,7 @@ interface OperonIDEState {
   toggleSidebar:    () => void
   toggleBottom:     () => void
   toggleRight:      () => void
+  setRightVisible:  (v: boolean) => void,
   setBottomTab:     (tab: PanelLayout['bottomTab']) => void
   setRightTab:      (tab: PanelLayout['rightTab']) => void
 
@@ -260,7 +261,8 @@ export const useOperonIDEStore = create<OperonIDEState>()(
 
       createTerminal(cwd, title) {
         const id: string    = nanoid()
-        const rootCwd = cwd ?? get().workspaceRoot || process.env.HOME || '/'
+        const rootCwd = cwd ?? get().workspaceRoot
+          || (IS_ELECTRON ? (process.env.HOME ?? '/') : '/')
         const session: TerminalSession = {
           id,
           title:    title ?? `zsh — ${rootCwd.split('/').pop()}`,
@@ -320,6 +322,11 @@ export const useOperonIDEStore = create<OperonIDEState>()(
 
       toggleRight() {
         set(s => { s.layout.rightVisible = !s.layout.rightVisible })
+      },
+
+      // Bug 9 fix: was missing, called by CommandPalette
+      setRightVisible(v: boolean) {
+        set(s => { s.layout.rightVisible = v })
       },
 
       setBottomTab(tab) {

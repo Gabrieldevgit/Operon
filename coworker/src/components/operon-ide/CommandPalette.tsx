@@ -52,9 +52,7 @@ function useIDECommands(): Command[] {
       sublabel: 'Delegate a task to the Orchestrator agent',
       action: () => {
         bus.emit('agent.switched', { agentId: 'orchestrator', agentName: 'Orchestrator', role: 'orchestration' })
-        store.setRightTab('agents')
-        store.setRightVisible(true)
-      },
+      store.setRightVisible(true)   // Bug 9 fix: method now exists in store
     },
     {
       id: 'ask-dev',          label: 'Ask Dev Agent',       icon: '💻', category: 'agent',
